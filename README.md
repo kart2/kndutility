@@ -13,21 +13,24 @@ Install the following in your CentOS 8 VM
 
 ```sh
 sudo kind create cluster
-'''
+```
 
 #### Install progress bar python module
 ```sh
 sudo pip install progress
-'''
+```
 #### Install KND as cli using below command
 ```sh
 sudo python -m pip install --editable .
-'''
+```
 
 ## How to run KND
 
+```sh
 KND --help
+```
 Usage: KND [OPTIONS] REPLICAS NGINXVERSION DEPLOYMENTNAME
 
 Options:
   --help.
+
