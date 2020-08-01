@@ -88,5 +88,6 @@ Vagrant.configure("2") do |config|
      sudo pip2 install progress
      sudo pip2 install click
      echo PATH=$PATH:/home/vagrant/vmware/kind >> ~/.bash_profile
+     sudo kind create cluster
    SHELL
 end

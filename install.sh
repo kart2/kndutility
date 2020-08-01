@@ -1,5 +1,3 @@
-sudo kind create cluster
-sudo pip2 install progress
 sudo python2 -m pip install --editable .
 
 

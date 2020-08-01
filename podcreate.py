@@ -11,13 +11,15 @@ from progress.bar import Bar
 import logging
 
 
-logger = logging.getLogger('PodDeploy')
-hdlr = logging.FileHandler('./poddeploy.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr) 
-logger.setLevel(logging.INFO)
 
+def logger_obj():
+    logger = logging.getLogger('PodDeploy')
+    hdlr = logging.FileHandler('./poddeploy.log')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr) 
+    logger.setLevel(logging.INFO)
+    return logger
 
 class PodDeploy:
     """
@@ -28,7 +30,7 @@ class PodDeploy:
                 self.version=version
                 self.name=name
 
-             
+logger = logger_obj()             
 def create_deployment_object(pd):
     # Configureate Pod template container
     container = client.V1Container(
@@ -65,11 +67,13 @@ def create_deployment(api_instance, deployment):
         body=deployment,
         namespace="default")
     logger.info("Deployment created. status='%s'" % str(api_response.status))
+    return api_response.status.ready_replicas
+
 
 
 def update_deployment(api_instance, deployment,pd):
     # update the kube deployment
-    # Update container image
+    # Update container image    
     deployment.spec.template.spec.containers[0].image = "nginx:"+pd.version
     deployment.spec.template.spec.replicas = pd.replicas
     # Update the deployment
@@ -78,11 +82,17 @@ def update_deployment(api_instance, deployment,pd):
         namespace="default",
         body=deployment)
     logger.info("Deployment updated. status='%s'" % str(api_response.status))
-    
+    return api_response.status.ready_replicas
+
  
+def get_deployment(api_instance,pd):
+     # check the deployment    
+    api_response = api_instance.read_namespaced_deployment(pd.name, "default")
+    logger.info("Pod Deployment Staus. status='%s'" % str(api_response.status))
+
 def get_deployment_status(api_instance,pd):
      # check the deployment status   
-    api_response = api_instance.read_namespaced_deployment(pd.name, "default")
+    api_response = api_instance.read_namespaced_deployment_status(pd.name, "default")
     logger.info("Pod Deployment Staus. status='%s'" % str(api_response.status))
 
  
@@ -117,14 +127,16 @@ def nginx_deploy(replicas,version,name):
             print_progress_bar(" Retrieving Pod Deployment Status")
         except client.exceptions.ApiException as e1:
             # Create a new deployment 
-            create_deployment(apps_v1, deployment)
+            podstatus = create_deployment(apps_v1, deployment)
             print_progress_bar(" Creating Pod Deployment")
         else:
             try:
-                update_deployment(apps_v1, deployment,pd)
+                podstatus = update_deployment(apps_v1, deployment,pd)
                 print_progress_bar(" Updating Pod Deployment")
             except client.exceptions.ApiException as e1:
                 logger.exception("Exception when calling AppsV1Api->update_deployment: %s\n" % e1)
+        finally:
+            return podstatus
     except Exception as ex:
         logger.exception("Exception Occurred.")
         raise
