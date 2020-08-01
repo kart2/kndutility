@@ -19,3 +19,10 @@ sudo pip install progress
 #### Install KND as cli using below command
 sudo python -m pip install --editable .
 
+## How to run KND
+
+KND --help
+Usage: KND [OPTIONS] REPLICAS NGINXVERSION DEPLOYMENTNAME
+
+Options:
+  --help.
