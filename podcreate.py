@@ -6,25 +6,29 @@ Creates, updates a deployment using AppsV1Api.
 import sys
 from kubernetes import client, config
 from urllib3.exceptions import MaxRetryError
-import sys
 import time
-import logging
 from progress.bar import Bar
+import logging
 
-logger = logging.getLogger('poddeploy')
-hdlr = logging.FileHandler('/var/tmp/poddeploy.log')
+
+logger = logging.getLogger('PodDeploy')
+hdlr = logging.FileHandler('./poddeploy.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.INFO)
-# class of the deploy arg
-class poddeploy:
+
+
+class PodDeploy:
+    """
+    This class helps to create the pod deploy arguments wrapper       
+    """
     def __init__(self,replicas,version,name):
                 self.replicas=replicas
                 self.version=version
                 self.name=name
 
-# create deployment object using api              
+             
 def create_deployment_object(pd):
     # Configureate Pod template container
     container = client.V1Container(
@@ -54,7 +58,7 @@ def create_deployment_object(pd):
 
     return deployment
 
-# create actual kube deployment
+
 def create_deployment(api_instance, deployment):
     # Create deployement
     api_response = api_instance.create_namespaced_deployment(
@@ -62,8 +66,9 @@ def create_deployment(api_instance, deployment):
         namespace="default")
     logger.info("Deployment created. status='%s'" % str(api_response.status))
 
-# update the kube deployment
+
 def update_deployment(api_instance, deployment,pd):
+    # update the kube deployment
     # Update container image
     deployment.spec.template.spec.containers[0].image = "nginx:"+pd.version
     deployment.spec.template.spec.replicas = pd.replicas
@@ -74,26 +79,28 @@ def update_deployment(api_instance, deployment,pd):
         body=deployment)
     logger.info("Deployment updated. status='%s'" % str(api_response.status))
     
- # check the deployment status   
-def getDeploymentStatus(api_instance,pd):
+ 
+def get_deployment_status(api_instance,pd):
+     # check the deployment status   
     api_response = api_instance.read_namespaced_deployment(pd.name, "default")
     logger.info("Pod Deployment Staus. status='%s'" % str(api_response.status))
 
-
-    
-def printProgressBar(task):
+ 
+def print_progress_bar(task):
+    # prints the progress bar  
     bar = Bar(task, max=60)
     for i in range(60):
     # Do some work
         bar.next()
     bar.finish()
   
-# main deploy method
-def k8Deploy(replicas,version,name):
+
+def nginx_deploy(replicas,version,name):
+    # main deploy method
     # Configs can be set in Configuration class directly or using helper
     # utility. If no argument provided, the config will be loaded from
     # default location.
-    printProgressBar(" Loading Kube Config")
+    print_progress_bar(" Loading Kube Config")
     try:
         apps_v1 = ""
         try:
@@ -102,32 +109,24 @@ def k8Deploy(replicas,version,name):
         except MaxRetryError as e:
             logger.error("MaxRetryError ",e.message)
             raise   
-
-    # Create pod argument class object
-        pd=poddeploy(int(replicas),version,name)
-    # Create a deployment object with client-python API. The deployment we
-    # created is same as the `nginx-deployment.yaml` in the /examples folder. 
+        pd=PodDeploy(int(replicas),version,name)
+        # Create a deployment object with client-python API.
         deployment = create_deployment_object(pd)     
         try:
-            getDeploymentStatus(apps_v1,pd)
-            printProgressBar(" Retrieving Pod Deployment Status")
+            get_deployment_status(apps_v1,pd)
+            print_progress_bar(" Retrieving Pod Deployment Status")
         except client.exceptions.ApiException as e1:
-            #print("Exception when calling AppsV1Api->getDeploymentStatus: %s\n" % e1)
+            # Create a new deployment 
             create_deployment(apps_v1, deployment)
-            printProgressBar(" Creating Pod Deployment")
+            print_progress_bar(" Creating Pod Deployment")
         else:
             try:
                 update_deployment(apps_v1, deployment,pd)
-                printProgressBar(" Updating Pod Deployment")
+                print_progress_bar(" Updating Pod Deployment")
             except client.exceptions.ApiException as e1:
                 logger.exception("Exception when calling AppsV1Api->update_deployment: %s\n" % e1)
     except Exception as ex:
         logger.exception("Exception Occurred.")
-        print(ex.message)
         raise
     except:
         logger.error("Unexpected error:", sys.exc_info()[0])
-
-
-
-    #sys.stdout.flush()

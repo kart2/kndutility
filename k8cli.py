@@ -1,34 +1,38 @@
 #!/usr/bin/python3
-
+"""
+Karthick Udayakumar
+KND Utility
+"""
 import sys
 import podcreate
 import os
 import click
 
+
+logger=""
 def main():
+
     cli()
+
 @click.command()
 @click.argument('replicas')
 @click.argument('nginxversion')
 @click.argument('deploymentname')
 def cli(replicas,nginxversion,deploymentname):
-    #if len(sys.argv) != 4:
-     #   raise Exception('Invalid number of agruments. Expected 4. Received ' + str(len(sys.argv)))
-
-        replicas = replicas
-        version = nginxversion
-        deploymentName = deploymentname
+    # KND utilty cli method
         try:
-            podcreate.k8Deploy(int(replicas),version,deploymentName)
+            replicas = replicas
+            version = nginxversion
+            deploymentName = deploymentname
+            podcreate.nginx_deploy(int(replicas),version,deploymentName)
         except ValueError:
+            print("Check your input, int, string, string")
             logger.error("Check your input, int, string, string")
         except:
-            print("***Connection error. Please check for the kubernetes cluster availability*****")
-            logger.error("Unexpected error:", sys.exc_info()[0])
-    #os.system("sudo systemctl start docker && chmod +x /var/run/docker.sock && /home/vagrant/vmware/kind/kind create cluster")
-    #podcreate.k8Deploy(replicas,version,deploymentName)
+            print("***Connection error. Please check for the kubernetes cluster availability*****",sys.exc_info())
+            #logger.error("Unexpected error:", sys.exc_info()[0])
         else:
-            podcreate.printProgressBar(" Pod Deployment Complete.")
+            podcreate.print_progress_bar(" Pod Deployment Complete.")
     
 if __name__ == "__main__":
     main()
