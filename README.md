@@ -41,13 +41,13 @@ Options:
 2. vagrant up
 3. vagrant ssh
 4. cd /vagrant_data
-5. su and type pwd
-6. run ./install.sh
+5. run ./install.sh
 
 The environment will be ready to execute the KND command.
 
 #### Expected output
 [root@localhost ~]# KND 1 1.18.0 pod1
+
  Loading Kube Config |################################| 60/60
  Retrieving Pod Deployment Status |################################| 60/60
  Updating Pod Deployment |################################| 60/60
