@@ -77,17 +77,19 @@ Vagrant.configure("2") do |config|
     --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo
      sudo yum install docker-ce.x86_64 docker-ce.x86_64 containerd.io -y
-     sudo chmod 777 /var/run/docker.sock
      sudo systemctl start docker
      sudo yum install git -y
      sudo dnf install python2 -y
+     sudo chmod 777 /var/run/docker.sock
      git clone --recursive https://github.com/kubernetes-client/python.git
      cd python
-     sudo python2.7 setup.py install
-     sudo pip2 install kubernetes
-     sudo pip2 install progress
-     sudo pip2 install click
-     echo PATH=$PATH:/home/vagrant/vmware/kind >> ~/.bash_profile
-     sudo kind create cluster
+     python2.7 setup.py install
+     pip2 install kubernetes
+     pip2 install progress
+     pip2 install click
+     sudo echo PATH=$PATH:/home/vagrant/vmware/kind >> /etc/bashrc
+     su vagrant && kind --version
+     cd /vagrant_data && ./install.sh
+     KND --help
    SHELL
 end

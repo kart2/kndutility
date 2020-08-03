@@ -1,3 +1,4 @@
+kind create cluster
 sudo python2 -m pip install --editable .
 
 

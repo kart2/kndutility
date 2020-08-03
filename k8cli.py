@@ -21,13 +21,11 @@ def main():
 @click.argument('deploymentname')
 def cli(replicas,nginxversion,deploymentname):
     # KND utilty cli method
-
         try:
             replicas = replicas
             version = nginxversion
-            deploymentName = deploymentname
-            
-            podstatus = podcreate.nginx_deploy(int(replicas),version,deploymentName)
+            deploymentname = deploymentname            
+            podstatus = podcreate.nginx_deploy(int(replicas),version,deploymentname)
         except ValueError:
             print("Check your input, int, string, string")
             logger.error("Check your input, int, string, string")
